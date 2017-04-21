@@ -272,6 +272,25 @@ public class TransistorRestController extends AbstractRestController {
 		}
 	}
 
+
+	@RequestMapping(value="/assemblies/{assemblyId}/lockUserChangedAttributes", method = RequestMethod.GET)
+	@ResponseBody
+	public String lockUserChangedAttributes(
+			@PathVariable long assemblyId,
+			@RequestHeader(value="X-Cms-User", required = false)  String userId,
+			@RequestHeader(value="X-Cms-Scope", required = false)  String scope){
+
+		if (userId == null) userId = "oneops-system";
+		try {
+			dManager.lockUserChangedAttributes(assemblyId, scope);
+			return "Ok";
+		}  catch (CmsBaseException te) {
+			logger.error(te);
+			te.printStackTrace();
+			throw te;
+		}
+	}
+
 	@RequestMapping(value="/assemblies/{assemblyId}/export", method = RequestMethod.GET)
 	@ResponseBody
 	public DesignExportSimple exportDesign(

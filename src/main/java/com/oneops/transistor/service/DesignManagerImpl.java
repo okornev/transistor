@@ -102,6 +102,11 @@ public class DesignManagerImpl implements DesignManager {
 	}
 
 	@Override
+	public void lockUserChangedAttributes(long assemblyId, String scope) {
+		designExpProcessor.lockUserChangedAttributes(assemblyId, scope);
+	}
+
+	@Override
 	public long importEnvironment(long assemblyId, String userId, String scope, EnvironmentExportSimple ees) {
 		return environmentExpProcessor.importEnvironment(assemblyId, userId, scope, ees);
 	}
