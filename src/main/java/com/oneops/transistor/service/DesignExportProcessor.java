@@ -906,7 +906,6 @@ public class DesignExportProcessor {
 			for (CmsCIRelation requires : requiresRels) {
 				CmsCI component = requires.getToCi();
 				String templateName = requires.getAttribute("template").getDjValue();
-
 				List<CmsCI> mgmtComponents = cmProcessor.getCiBy3(packNsPath, MGMT_PREFIX + component.getCiClassName(), templateName);
 				CmsCI template = mgmtComponents.get(0);
 				boolean needUpdate = false;
