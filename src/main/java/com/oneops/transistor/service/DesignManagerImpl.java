@@ -102,8 +102,8 @@ public class DesignManagerImpl implements DesignManager {
 	}
 
 	@Override
-	public void lockUserChangedAttributes(long assemblyId, String scope) {
-		designExpProcessor.lockUserChangedAttributes(assemblyId, scope);
+	public long lockUserChangedAttributes(long assemblyId, String scope) {
+		return designExpProcessor.lockUserChangedAttributes(assemblyId, scope);
 	}
 
 	@Override

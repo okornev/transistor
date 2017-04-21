@@ -891,13 +891,13 @@ public class DesignExportProcessor {
 				platform.getAttribute("version").getNewValue();
 	}
 
-	public void lockUserChangedAttributes(long assemblyId, String scope) {
+	public long lockUserChangedAttributes(long assemblyId, String scope) {
         CmsCI assembly = cmProcessor.getCiById(assemblyId);
         if (assembly == null) {
             throw new DesignExportException(DesignExportException.CMS_NO_CI_WITH_GIVEN_ID_ERROR, BAD_ASSEMBLY_ID_ERROR_MSG + assemblyId);
         }
         trUtil.verifyScope(assembly, scope);
-        
+        long counter = 0;
 		List<CmsCIRelation> composedOfs = cmProcessor.getFromCIRelations(assemblyId, COMPOSED_OF_RELATION, DESIGN_PLATFORM_CLASS);
 		for (CmsCIRelation composedOf : composedOfs) {
 			CmsCI platform = composedOf.getToCi();
@@ -916,6 +916,7 @@ public class DesignExportProcessor {
 					if (templateAttribute.getDfValue()==null && actualAttribute.getDfValue()==null) continue;
 					if ((templateAttribute.getDfValue()==null || "null".equals(templateAttribute.getDfValue())) && actualAttribute.getDfValue()!=null && actualAttribute.getDfValue().trim().isEmpty()) continue; // null in template is actually being translated into empty string because of the not null constraint on attribute value, so ignore those as well  
 					if (!actualAttribute.getDfValue().equals(templateAttribute.getDfValue()) && !OWNER_DESIGN.equals(actualAttribute.getOwner())){
+						counter ++;
                         actualAttribute.setOwner(OWNER_DESIGN);
                         needUpdate = true;
                     }
@@ -925,5 +926,6 @@ public class DesignExportProcessor {
 				}
 			}
 		}
+		return counter;
 	}
 }

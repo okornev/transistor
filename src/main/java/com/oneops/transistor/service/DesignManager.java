@@ -51,6 +51,6 @@ public interface DesignManager {
 	EnvironmentExportSimple exportEnvironment(long envId, Long[] platformIds, String scope);
 	long importEnvironment(long assemblyId, String userId, String scope, EnvironmentExportSimple ees);
 
-    void lockUserChangedAttributes(long assemblyId, String scope);
+    long lockUserChangedAttributes(long assemblyId, String scope);
 }
 
