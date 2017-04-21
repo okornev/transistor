@@ -286,8 +286,8 @@ public class TransistorRestController extends AbstractRestController {
 			long updateCount = dManager.lockUserChangedAttributes(assemblyId, scope);
 			logger.info("Assembly "+assemblyId+" user modified attribute locking time - "+ (System.currentTimeMillis()-startTime)+" ms");
 			return updateCount;
-		}  catch (CmsBaseException te) {
-			logger.error(te);
+		}  catch (Exception te) {
+			logger.error("Unexpected error while locking user modified attributes", te);
 			throw te;
 		}
 	}
