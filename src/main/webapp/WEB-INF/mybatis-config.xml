@@ -17,10 +17,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 		<typeAlias alias="mdrelattr" type="com.oneops.cms.md.domain.CmsRelationAttribute" />
 	</typeAliases>
 	<plugins>
-		<plugin interceptor="com.oneops.mybatis.StatsPlugin">
-			<property name="interval" value="60"/>
-			<property name="action" value="com.oneops.mybatis.action.LoggerAction"/>
-		</plugin>
+		<plugin interceptor="com.oneops.mybatis.StatsPlugin"/>
 	</plugins>
 	<mappers>
 		<mapper resource="com/oneops/cms/md/dal/ClazzMapper.xml" />
