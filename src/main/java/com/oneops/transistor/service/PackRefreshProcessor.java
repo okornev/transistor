@@ -62,7 +62,7 @@ public class PackRefreshProcessor {
     private CmsRfcProcessor rfcProcessor;
     private CmsMdProcessor mdProcessor;
     private CmsDJValidator djValidator;
-    private TransUtil trUtil;
+    private TransUtil trUtil; 
 
     public void setCmProcessor(CmsCmProcessor cmProcessor) {
         this.cmProcessor = cmProcessor;
@@ -201,7 +201,8 @@ public class PackRefreshProcessor {
 
     private void processMonitors(List<CmsCIRelation> templInternalRels, Map<Long, List<CmsRfcCI>> templateIdsMap, RefreshContext context) {
 
-        List<CmsCIRelation> existingDesignMonitors = cmProcessor.getCIRelations(context.designPlatformNsPath, CATALOG_WATCHED_BY, null, null, CATALOG_MONITOR_CLASS);
+        List<CmsCIRelation> existingDesignMonitors = cmProcessor.
+            getCIRelations(context.designPlatformNsPath, CATALOG_WATCHED_BY, null, null, CATALOG_MONITOR_CLASS);
         //ignore custom monitors
         Map<Long, List<CmsCIRelation>> existingDesignMonitorMap = existingDesignMonitors.stream().
                 filter(relation -> !(isCustomMonitor(relation.getToCi()))).
@@ -210,7 +211,8 @@ public class PackRefreshProcessor {
         List<CmsCIRelation> obsoleteMonitors = new ArrayList<>();
 
         Map<Long, List<CmsCIRelation>> templateMonitorMap = templInternalRels.stream().
-                filter(relation -> MGMT_CATALOG_WATCHEDBY.equals(relation.getRelationName())).
+                filter(relation -> MGMT_CATALOG_WATCHEDBY.equals(relation.getRelationName()) &&
+                        !(CI_STATE_PENDING_DELETION.equals(relation.getToCi().getCiState()))).
                 collect(Collectors.groupingBy(CmsCIRelation::getFromCiId));
 
         templateMonitorMap.entrySet().stream().
@@ -350,7 +352,7 @@ public class PackRefreshProcessor {
                 for (CmsCIRelation userRel : edge.userRels) {
                     CmsRfcCI leafRfc = mergeCis(templLeafCi , userRel.getToCi(), "catalog", context);
 
-                    if (templLeafCi == null || "pending_deletion".equals(templLeafCi.getCiState())) {
+                    if (templLeafCi == null || CI_STATE_PENDING_DELETION.equals(templLeafCi.getCiState())) {
                         leafRfc.setRfcAction("delete");
                     }
 
@@ -384,7 +386,7 @@ public class PackRefreshProcessor {
 
             } else {
                 CmsCI templateCi = edge.templateRel.getToCi();
-                if (!"pending_deletion".equals(templateCi.getCiState())) {
+                if (!CI_STATE_PENDING_DELETION.equals(templateCi.getCiState())) {
                     String cardinality = edge.templateRel.getAttribute("constraint").getDfValue();
                     if (cardinality != null && cardinality.startsWith("1..")) {
                         List<CmsRfcCI> catalogCiIds = new ArrayList<>();
@@ -486,7 +488,7 @@ public class PackRefreshProcessor {
             }
             relAttrs.put(relAttr.getAttributeName(), relAttr);
         }
-        if ("pending_deletion".equals(mgmtCiRelation.getRelationState())){
+        if (CI_STATE_PENDING_DELETION.equals(mgmtCiRelation.getRelationState())){
             newRfc.setRfcAction("delete");
         }
 
