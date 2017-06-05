@@ -891,13 +891,13 @@ public class DesignExportProcessor {
 				platform.getAttribute("version").getNewValue();
 	}
 
-	public long lockUserChangedAttributes(long assemblyId, String scope) {
-        CmsCI assembly = cmProcessor.getCiById(assemblyId);
-        if (assembly == null) {
-            throw new DesignExportException(DesignExportException.CMS_NO_CI_WITH_GIVEN_ID_ERROR, BAD_ASSEMBLY_ID_ERROR_MSG + assemblyId);
-        }
-        trUtil.verifyScope(assembly, scope);
-        long counter = 0;
+	public long lockUserChangedAttributes(long assemblyId, String scope, String userId, boolean dryRun) {
+		CmsCI assembly = cmProcessor.getCiById(assemblyId);
+		if (assembly == null) {
+			throw new DesignExportException(DesignExportException.CMS_NO_CI_WITH_GIVEN_ID_ERROR, BAD_ASSEMBLY_ID_ERROR_MSG + assemblyId);
+		}
+		trUtil.verifyScope(assembly, scope);
+		long counter = 0;
 		List<CmsCIRelation> composedOfs = cmProcessor.getFromCIRelations(assemblyId, COMPOSED_OF_RELATION, DESIGN_PLATFORM_CLASS);
 		for (CmsCIRelation composedOf : composedOfs) {
 			CmsCI platform = composedOf.getToCi();
@@ -908,21 +908,39 @@ public class DesignExportProcessor {
 				String templateName = requires.getAttribute("template").getDjValue();
 				List<CmsCI> mgmtComponents = cmProcessor.getCiBy3(packNsPath, MGMT_PREFIX + component.getCiClassName(), templateName);
 				CmsCI template = mgmtComponents.get(0);
-				boolean needUpdate = false;
+
+				CmsRfcCI newRfc = new CmsRfcCI();
+				newRfc.setNsPath(template.getNsPath());
+				newRfc.setCiClassId(template.getCiClassId());
+				newRfc.setCiClassName(template.getCiClassName());
+				//newRfc.setReleaseNsPath();
+
+				boolean pushUpdate = false;
 				for (Map.Entry<String, CmsCIAttribute> entry : component.getAttributes().entrySet()) {
 					String key = entry.getKey();
 					CmsCIAttribute actualAttribute = entry.getValue();
 					CmsCIAttribute templateAttribute = template.getAttribute(key);
-					if (templateAttribute.getDfValue()==null && actualAttribute.getDfValue()==null) continue;
-					if ((templateAttribute.getDfValue()==null || "null".equals(templateAttribute.getDfValue())) && actualAttribute.getDfValue()!=null && actualAttribute.getDfValue().trim().isEmpty()) continue; // null in template is actually being translated into empty string because of the not null constraint on attribute value, so ignore those as well  
-					if (!actualAttribute.getDfValue().equals(templateAttribute.getDfValue()) && !OWNER_DESIGN.equals(actualAttribute.getOwner())){
-						counter ++;
-                        actualAttribute.setOwner(OWNER_DESIGN);
-                        needUpdate = true;
-                    }
+					if (templateAttribute.getDfValue() == null && actualAttribute.getDfValue() == null) continue;
+					if ((templateAttribute.getDfValue() == null || "null".equals(templateAttribute.getDfValue())) && actualAttribute.getDfValue() != null && actualAttribute.getDfValue().trim().isEmpty())
+						continue; // null in template is actually being translated into empty string because of the not null constraint on attribute value, so ignore those as well  
+					if (!actualAttribute.getDfValue().equals(templateAttribute.getDfValue()) && !OWNER_DESIGN.equals(actualAttribute.getOwner())) {
+						counter++;
+						if (!dryRun) {
+							//populate values from template ci
+							CmsRfcAttribute attr = new CmsRfcAttribute();
+							attr.setAttributeName(templateAttribute.getAttributeName());
+							attr.setNewValue(templateAttribute.getDjValue());
+							attr.setOldValue(templateAttribute.getDjValue());
+							attr.setAttributeId(templateAttribute.getAttributeId());
+							attr.setOwner(OWNER_DESIGN);
+							Map<String, CmsRfcAttribute> attributes = newRfc.getAttributes();
+							attributes.put(attr.getAttributeName(), attr);
+							pushUpdate = true;
+						}
+					}
 				}
-				if (needUpdate) {
-					cmProcessor.updateCI(component);
+				if (pushUpdate) {
+					cmRfcMrgProcessor.upsertCiRfc(newRfc, userId);
 				}
 			}
 		}
