@@ -909,10 +909,17 @@ public class DesignExportProcessor {
 				List<CmsCI> mgmtComponents = cmProcessor.getCiBy3(packNsPath, MGMT_PREFIX + component.getCiClassName(), templateName);
 				CmsCI template = mgmtComponents.get(0);
 
+
+				String platNsPath = platform.getNsPath() + "/_design/" + platform.getCiName();
 				CmsRfcCI newRfc = new CmsRfcCI();
-				newRfc.setNsPath(template.getNsPath());
+				newRfc.setNsPath(platNsPath);
 				newRfc.setCiClassId(template.getCiClassId());
 				newRfc.setCiClassName(template.getCiClassName());
+				newRfc.setCiId(component.getCiId());
+				newRfc.setCiName(component.getCiName());
+				newRfc.setReleaseNsPath(assembly.getNsPath()+"/"+assembly.getCiName());
+				newRfc.setIsActiveInRelease(true);
+				
 				//newRfc.setReleaseNsPath();
 
 				boolean pushUpdate = false;
@@ -928,10 +935,10 @@ public class DesignExportProcessor {
 						if (!dryRun) {
 							//populate values from template ci
 							CmsRfcAttribute attr = new CmsRfcAttribute();
-							attr.setAttributeName(templateAttribute.getAttributeName());
-							attr.setNewValue(templateAttribute.getDjValue());
-							attr.setOldValue(templateAttribute.getDjValue());
-							attr.setAttributeId(templateAttribute.getAttributeId());
+							attr.setAttributeName(actualAttribute.getAttributeName());
+							attr.setNewValue(actualAttribute.getDjValue());
+							attr.setOldValue(actualAttribute.getDjValue());
+							attr.setAttributeId(actualAttribute.getAttributeId());
 							attr.setOwner(OWNER_DESIGN);
 							Map<String, CmsRfcAttribute> attributes = newRfc.getAttributes();
 							attributes.put(attr.getAttributeName(), attr);
